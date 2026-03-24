@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Камень, ножницы, бумага — игра с компьютером</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1e2a3a, #0f1724);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .game {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 48px;
+            padding: 30px;
+            width: 550px;
+            max-width: 100%;
+            text-align: center;
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            transition: transform 0.2s;
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #fff, #aaccff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            white-space: nowrap;
+        }
+
+        /* Убираем перенос звёздочки */
+        h1 span {
+            display: inline-block;
+        }
+
+        .score {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .score-card {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 28px;
+            padding: 12px 20px;
+            flex: 1;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+        }
+
+        .score-card h3 {
+            font-size: 1rem;
+            color: #ccc;
+            margin-bottom: 8px;
+        }
+
+        .score-card .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffd966;
+            line-height: 1;
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .move-btn {
+            background: rgba(0, 0, 0, 0.6);
+            border: none;
+            width: 100px;
+            height: 100px;
+            border-radius: 60px;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .move-btn:hover {
+            transform: translateY(-6px) scale(1.02);
+            background: rgba(100, 120, 150, 0.8);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .move-btn:active {
+            transform: scale(0.96);
+        }
+
+        .result-area {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 32px;
+            padding: 20px;
+            margin-top: 10px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .choice-display {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .choice-item {
+            flex: 1;
+            text-align: center;
+        }
+
+        .choice-label {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .choice-icon {
+            font-size: 2.5rem;
+            background: rgba(0, 0, 0, 0.5);
+            display: inline-block;
+            width: 70px;
+            height: 70px;
+            line-height: 70px;
+            border-radius: 50px;
+            margin-bottom: 8px;
+        }
+
+        .result-message {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #ffd966;
+            margin: 15px 0;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background: linear-gradient(135deg, #3a5a7a, #2a3a4a);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn.reset-btn {
+            background: linear-gradient(135deg, #5a3a4a, #4a2a3a);
+        }
+
+        .action-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        @media (max-width: 550px) {
+            .game { padding: 20px; }
+            .move-btn { width: 70px; height: 70px; font-size: 2rem; }
+            .choice-icon { width: 50px; height: 50px; line-height: 50px; font-size: 1.8rem; }
+            .result-message { font-size: 1.1rem; }
+            .action-btn { padding: 6px 14px; font-size: 0.9rem; }
+            h1 { font-size: 1.5rem; white-space: normal; }
+        }
+    </style>
+</head>
+<body>
+<div class="game">
+    <h1><span>✧ КАМЕНЬ · НОЖНИЦЫ · БУМАГА ✧</span></h1>
+
+    <div class="score">
+        <div class="score-card">
+            <h3>👤 ВЫ</h3>
+            <div class="score-value" id="playerScore">0</div>
+        </div>
+        <div class="score-card">
+            <h3>🤖 КОМПЬЮТЕР</h3>
+            <div class="score-value" id="botScore">0</div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button class="move-btn" data-move="камень">🪨</button>
+        <button class="move-btn" data-move="ножницы">✂️</button>
+        <button class="move-btn" data-move="бумага">📄</button>
+    </div>
+
+    <div id="resultArea" class="result-area" style="display: none;">
+        <div class="choice-display">
+            <div class="choice-item">
+                <div class="choice-label">ВЫ</div>
+                <div class="choice-icon" id="playerChoice">❓</div>
+            </div>
+            <div class="choice-item">
+                <div class="choice-label">КОМПЬЮТЕР</div>
+                <div class="choice-icon" id="botChoice">❓</div>
+            </div>
+        </div>
+        <div class="result-message" id="resultMsg"></div>
+        <div class="action-buttons">
+            <button id="againBtn" class="action-btn">▶ ЕЩЁ РАЗ</button>
+            <button id="resetBtn" class="action-btn reset-btn">🔄 НОВАЯ ИГРА</button>
+        </div>
+    </div>
+
+    <footer>Сделай ход — и компьютер ответит!</footer>
+</div>
+
+<script>
+    const emoji = { 'камень': '🪨', 'ножницы': '✂️', 'бумага': '📄' };
+    let playerScore = 0, botScore = 0;
+
+    const playerScoreEl = document.getElementById('playerScore');
+    const botScoreEl = document.getElementById('botScore');
+    const resultArea = document.getElementById('resultArea');
+    const playerChoiceSpan = document.getElementById('playerChoice');
+    const botChoiceSpan = document.getElementById('botChoice');
+    const resultMsgSpan = document.getElementById('resultMsg');
+    const againBtn = document.getElementById('againBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // Функция обновления счёта на экране
+    function updateScoreUI() {
+        playerScoreEl.textContent = playerScore;
+        botScoreEl.textContent = botScore;
+    }
+
+    // Сброс игры (обнуление счёта и скрытие результата)
+    function resetGame() {
+        playerScore = 0;
+        botScore = 0;
+        updateScoreUI();
+        resultArea.style.display = 'none';
+        // Разблокируем кнопки выбора (они всегда доступны)
+    }
+
+    // Обработка клика по кнопкам хода
+    document.querySelectorAll('.move-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const move = btn.getAttribute('data-move');
+            try {
+                const response = await fetch('/play', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ move: move })
+                });
+                const data = await response.json();
+
+                // Показываем область результата
+                resultArea.style.display = 'block';
+                playerChoiceSpan.textContent = emoji[data.player];
+                botChoiceSpan.textContent = emoji[data.bot];
+                resultMsgSpan.textContent = data.message;
+
+                // Обновляем счёт
+                if (data.result === 'win') playerScore++;
+                else if (data.result === 'lose') botScore++;
+                updateScoreUI();
+            } catch (err) {
+                console.error('Ошибка соединения с сервером', err);
+                resultMsgSpan.textContent = 'Ошибка соединения. Обновите страницу.';
+                resultArea.style.display = 'block';
+            }
+        });
+    });
+
+    // Кнопка "Ещё раз" — просто скрывает результат (счёт не сбрасывается)
+    againBtn.addEventListener('click', () => {
+        resultArea.style.display = 'none';
+    });
+
+    // Кнопка "Новая игра" — сбрасывает счёт и скрывает результат
+    resetBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>
